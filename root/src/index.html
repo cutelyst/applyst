@@ -1,0 +1,13 @@
+    <div class="jumbotron">
+      <div class="container">
+        <img src="{{ mainApp.screenshot }}" class="img-rounded">
+        <h1>{{ mainApp.name }}</h1>
+        <p>{{ mainApp.summary }}</p>
+        <p><a class="btn btn-primary btn-lg" href="#" role="button">More...</a></p>
+      </div>
+    </div>
+
+
+{% for app in apps %}
+<div class="well">{{ app.name }}</div>
+{% endfor %}
