@@ -23,6 +23,9 @@ class Root : public Controller
     C_ATTR(search, :Local :AutoArgs)
     void search(Context *c);
 
+    C_ATTR(app, :Local :AutoArgs)
+    void app(Context *c, const QString &id);
+
     C_ATTR(defaultPage, :Path)
     void defaultPage(Context *c);
 
