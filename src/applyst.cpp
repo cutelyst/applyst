@@ -24,7 +24,7 @@ bool Applyst::init()
     auto view = new GrantleeView(this);
     view->setIncludePaths({ pathTo({ QStringLiteral("root"), QStringLiteral("src") }) });
     view->setWrapper(QStringLiteral("base.html"));
-    view->setCache(false);
+    view->setCache(config(QStringLiteral("Production")).toBool());
 
     return true;
 }
