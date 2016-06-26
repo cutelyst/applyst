@@ -22,13 +22,14 @@ Root::~Root()
 {
 }
 
-QVariantMap componentToMap(const Appstream::Component &component)
+QVariantMap componentToMap(Cutelyst::Context *c, const Appstream::Component &component)
 {
     QVariantMap app;
     app.insert(QStringLiteral("id"), component.id());
     app.insert(QStringLiteral("name"), component.name());
     QString icon = component.iconUrl(QSize(64, 64)).toLocalFile();
-    icon.remove(QStringLiteral("/var/lib/app-info/"));
+    static QString appInfoPrefix = c->config(QStringLiteral("AppInfoPrefix")).toString();
+    icon.remove(appInfoPrefix);
     app.insert(QStringLiteral("icon"), icon);
     app.insert(QStringLiteral("summary"), component.summary());
     app.insert(QStringLiteral("description"), component.description());
@@ -50,13 +51,13 @@ void Root::index(Cutelyst::Context *c)
     auto desktopList = desktopListOrig;
     if (!desktopList.isEmpty()) {
         auto desktop = desktopList.takeAt(qrand() % desktopList.size());
-        c->setStash(QStringLiteral("mainApp"), componentToMap(desktop));
+        c->setStash(QStringLiteral("mainApp"), componentToMap(c, desktop));
     }
 
     QVariantList showApps;
     while (showApps.size() < 12 && !desktopList.isEmpty()) {
         auto desktop = desktopList.takeAt(qrand() % desktopList.size());
-        showApps.append(componentToMap(desktop));
+        showApps.append(componentToMap(c, desktop));
     }
     c->setStash(QStringLiteral("apps"), showApps);
 }
@@ -66,7 +67,7 @@ void Root::search(Context *c)
     auto result = m_db->findComponentsByString(c->request()->queryParam(QStringLiteral("q")));
     QVariantList apps;
     Q_FOREACH (const auto &desktop, result) {
-        apps.append(componentToMap(desktop));
+        apps.append(componentToMap(c, desktop));
     }
     c->setStash(QStringLiteral("apps"), apps);
 }
@@ -74,7 +75,7 @@ void Root::search(Context *c)
 void Root::app(Context *c, const QString &id)
 {
     auto desktop = m_db->componentById(id);
-    c->setStash(QStringLiteral("app"), componentToMap(desktop));
+    c->setStash(QStringLiteral("app"), componentToMap(c, desktop));
 }
 
 void Root::defaultPage(Cutelyst::Context *c)
