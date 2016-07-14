@@ -31,7 +31,7 @@ class Root : public Controller
 
 private:
     C_ATTR(End, :ActionClass("RenderView"))
-    void End(Context *c) { Q_UNUSED(c); }
+    bool End(Context *c) { Q_UNUSED(c); return true; }
 
     Appstream::Database *m_db;
 };
