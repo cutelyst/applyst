@@ -18,6 +18,8 @@
  ***************************************************************************/
 #include "root.h"
 
+#include <Cutelyst/Plugins/Utils/Pagination>
+
 #include <grantlee/safestring.h>
 
 //using namespace Cutelyst;
@@ -86,12 +88,25 @@ void Root::index(Cutelyst::Context *c)
 
 void Root::search(Context *c)
 {
+    /*const int appsPerPage = 100;
+    int offset;*/
+
+    QString searchText = c->req()->queryParam(QStringLiteral("q"));
+
     auto result = m_db->search(c->request()->queryParam(QStringLiteral("q")));
     QVariantList apps;
     Q_FOREACH (const auto &desktop, result) {
         apps.append(componentToMap(c, desktop));
     }
     c->setStash(QStringLiteral("apps"), apps);
+
+    /*Pagination pagination(1000,
+                          appsPerPage,
+                          c->req()->queryParam(QStringLiteral("page"), QStringLiteral("1")).toInt());
+    offset = pagination.offset();
+    c->setStash(QStringLiteral("pagination"), pagination);
+    c->setStash(QStringLiteral("posts_count"), 100);
+    c->setStash(QStringLiteral("search"), searchText);*/
 }
 
 void Root::app(Context *c, const QString &id)

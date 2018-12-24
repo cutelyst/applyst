@@ -7,3 +7,4 @@ The application is currently being updated and may have non-functioning features
 ## Known Issiues
 
 - Icons not shown.
+- Pagination not implemented yet, be careful when use * at search query
