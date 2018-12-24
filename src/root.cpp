@@ -88,25 +88,39 @@ void Root::index(Cutelyst::Context *c)
 
 void Root::search(Context *c)
 {
-    /*const int appsPerPage = 100;
-    int offset;*/
+    const int appsPerPage = 10;
+    int offset;
+    int count = 0;
 
     QString searchText = c->req()->queryParam(QStringLiteral("q"));
 
     const QList<AppStream::Component> result = m_db->search(c->request()->queryParam(QStringLiteral("q")));
+
+    QList<AppStream::Component> resultForPage;
+    for (int i = 0; i < appsPerPage; i++){
+        resultForPage.append(result[c->req()->queryParam(QStringLiteral("page")).toInt() * i]);
+    }
+
+    if (result.size() >= 0) {
+    Pagination pagination(result.size(),
+                          appsPerPage,
+                          c->req()->queryParam(QStringLiteral("page"), QStringLiteral("1")).toInt());
+
+    offset = pagination.offset();
+    c->setStash(QStringLiteral("pagination"), pagination);
+    c->setStash(QStringLiteral("posts_count"), result.size());
+    c->setStash(QStringLiteral("search"), searchText);
+    } else {
+        c->response()->redirect(c->uriFor(CActionFor(QStringLiteral("notFound"))));
+        return;
+    }
+
     QVariantList apps;
-    for (const auto &desktop : result) {
+    for (const auto &desktop : resultForPage) {
         apps.append(componentToMap(c, desktop));
     }
     c->setStash(QStringLiteral("apps"), apps);
 
-    /*Pagination pagination(1000,
-                          appsPerPage,
-                          c->req()->queryParam(QStringLiteral("page"), QStringLiteral("1")).toInt());
-    offset = pagination.offset();
-    c->setStash(QStringLiteral("pagination"), pagination);
-    c->setStash(QStringLiteral("posts_count"), 100);
-    c->setStash(QStringLiteral("search"), searchText);*/
 }
 
 void Root::app(Context *c, const QString &id)
