@@ -10,6 +10,10 @@
                 <div class="caption">
                     <h4 class="group inner list-group-item-heading elide"><a href="/app/{{ app.id }}">{{ app.name }}</a></h4>
                     <p class="group inner list-group-item-text elide">{{ app.summary }}</p>
+                    <!--p class="group inner list-group-item-text elide">{{ app.description|safe }}</p-->
+                    {% if app.screenshot %}
+                    <img class="group list-group-image" src="{{ app.screenshot }}" style="width:236px;height:128px;">
+                    {% endif %}
                 </div>
             </div>
         </div>

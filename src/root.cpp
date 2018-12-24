@@ -1,20 +1,35 @@
+/***************************************************************************
+ *   Copyright (C) 2017-2018 Daniel Nicoletti <dantti12@gmail.com>         *
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ *   This program is distributed in the hope that it will be useful,       *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+ *   GNU General Public License for more details.                          *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this program; see the file COPYING. If not, write to       *
+ *   the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,  *
+ *   Boston, MA 02110-1301, USA.                                           *
+ ***************************************************************************/
 #include "root.h"
 
-//using namespace Cutelyst;
-using namespace Appstream;
+#include <grantlee/safestring.h>
 
-#include <AppstreamQt/database.h>
-#include <AppstreamQt/component.h>
-#include <AppstreamQt/screenshot.h>
-#include <AppstreamQt/image.h>
+//using namespace Cutelyst;
+using namespace AppStream;
 
 #include <QDebug>
 
 Root::Root(QObject *parent) : Cutelyst::Controller(parent)
 {
-    m_db = new Appstream::Database;
-    if (!m_db->open()) {
-        qWarning() << "Failed to open Appstream db" << m_db->errorString();
+    m_db = new AppStream::Pool;
+    if (!m_db->load()) {
+        qWarning() << "Failed to open AppStream db";// << m_db->errorString();
     }
 }
 
@@ -22,23 +37,30 @@ Root::~Root()
 {
 }
 
-QVariantMap componentToMap(Cutelyst::Context *c, const Appstream::Component &component)
+QVariantMap componentToMap(Cutelyst::Context *c, const AppStream::Component &component)
 {
     QVariantMap app;
     app.insert(QStringLiteral("id"), component.id());
     app.insert(QStringLiteral("name"), component.name());
-    QString icon = component.iconUrl(QSize(64, 64)).toLocalFile();
+
+    QUrl icon = component.icon(QSize(64, 64)).url();//.toLocalFile();
+    QString iconPath = icon.toString();
     static QString appInfoPrefix = c->config(QStringLiteral("AppInfoPrefix")).toString();
-    icon.remove(appInfoPrefix);
-    app.insert(QStringLiteral("icon"), icon);
+    iconPath.remove(appInfoPrefix);
+    //qWarning() << iconPath;
+    app.insert(QStringLiteral("icon"), iconPath);
+
     app.insert(QStringLiteral("summary"), component.summary());
-    app.insert(QStringLiteral("description"), component.description());
-    QList<Appstream::Screenshot> screenshots =  component.screenshots();
-//    qDebug() << component.name() << component.icon() << component.iconUrl(QSize(64, 64)) << component.summary();
+
+    const Grantlee::SafeString html(component.description(), true);
+    app.insert(QStringLiteral("description"), html);
+
+    QList<AppStream::Screenshot> screenshots =  component.screenshots();
+    //qWarning() << component.name() << iconPath << component.summary();
     if (!screenshots.isEmpty()) {
-        QList<Appstream::Image> images = screenshots.first().images();
+        QList<AppStream::Image> images = screenshots.first().images();
         if (!images.isEmpty()) {
-//            qDebug() << images.first().kind() << images.first().url();
+            //qDebug() << images.first().kind() << images.first().url();
             app.insert(QStringLiteral("screenshot"), images.first().url());
         }
     }
@@ -47,7 +69,7 @@ QVariantMap componentToMap(Cutelyst::Context *c, const Appstream::Component &com
 
 void Root::index(Cutelyst::Context *c)
 {
-    static auto desktopListOrig = m_db->componentsByKind(Appstream::Component::KindDesktop);
+    static auto desktopListOrig = m_db->componentsByKind(AppStream::Component::KindDesktopApp);
     auto desktopList = desktopListOrig;
     if (!desktopList.isEmpty()) {
         auto desktop = desktopList.takeAt(qrand() % desktopList.size());
@@ -64,7 +86,7 @@ void Root::index(Cutelyst::Context *c)
 
 void Root::search(Context *c)
 {
-    auto result = m_db->findComponentsByString(c->request()->queryParam(QStringLiteral("q")));
+    auto result = m_db->search(c->request()->queryParam(QStringLiteral("q")));
     QVariantList apps;
     Q_FOREACH (const auto &desktop, result) {
         apps.append(componentToMap(c, desktop));
@@ -74,8 +96,17 @@ void Root::search(Context *c)
 
 void Root::app(Context *c, const QString &id)
 {
-    auto desktop = m_db->componentById(id);
-    c->setStash(QStringLiteral("app"), componentToMap(c, desktop));
+    auto desktops = m_db->componentsById(id);
+    QVariantList apps;
+    Q_FOREACH (const auto &desktop, desktops) {
+        apps.append(componentToMap(c, desktop));
+    }
+    c->setStash(QStringLiteral("apps"), apps);
+
+    /*
+    auto desktop = m_db->componentsById(id);
+    c->setStash(QStringLiteral("app"), componentToMap(c, desktop[0]));
+    */
 }
 
 void Root::defaultPage(Cutelyst::Context *c)
@@ -83,4 +114,3 @@ void Root::defaultPage(Cutelyst::Context *c)
     c->response()->setBody(QStringLiteral("Page not found!"));
     c->response()->setStatus(404);
 }
-
