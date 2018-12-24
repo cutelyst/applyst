@@ -26,6 +26,7 @@
 using namespace AppStream;
 
 #include <QDebug>
+#include <QRandomGenerator>
 
 Root::Root(QObject *parent) : Cutelyst::Controller(parent)
 {
@@ -71,16 +72,18 @@ QVariantMap componentToMap(Cutelyst::Context *c, const AppStream::Component &com
 
 void Root::index(Cutelyst::Context *c)
 {
+    QRandomGenerator gen1 = QRandomGenerator::securelySeeded();
+
     static QList<AppStream::Component> desktopListOrig = m_db->componentsByKind(AppStream::Component::KindDesktopApp);
     auto desktopList = desktopListOrig;
     if (!desktopList.isEmpty()) {
-        auto desktop = desktopList.takeAt(qrand() % desktopList.size());
+        auto desktop = desktopList.takeAt(gen1.bounded(0, desktopList.size()));
         c->setStash(QStringLiteral("mainApp"), componentToMap(c, desktop));
     }
 
     QVariantList showApps;
     while (showApps.size() < 12 && !desktopList.isEmpty()) {
-        auto desktop = desktopList.takeAt(qrand() % desktopList.size());
+        auto desktop = desktopList.takeAt(gen1.bounded(0, desktopList.size()));
         showApps.append(componentToMap(c, desktop));
     }
     c->setStash(QStringLiteral("apps"), showApps);
