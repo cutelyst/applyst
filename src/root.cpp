@@ -71,7 +71,7 @@ QVariantMap componentToMap(Cutelyst::Context *c, const AppStream::Component &com
 
 void Root::index(Cutelyst::Context *c)
 {
-    static auto desktopListOrig = m_db->componentsByKind(AppStream::Component::KindDesktopApp);
+    static QList<AppStream::Component> desktopListOrig = m_db->componentsByKind(AppStream::Component::KindDesktopApp);
     auto desktopList = desktopListOrig;
     if (!desktopList.isEmpty()) {
         auto desktop = desktopList.takeAt(qrand() % desktopList.size());
@@ -93,9 +93,9 @@ void Root::search(Context *c)
 
     QString searchText = c->req()->queryParam(QStringLiteral("q"));
 
-    auto result = m_db->search(c->request()->queryParam(QStringLiteral("q")));
+    const QList<AppStream::Component> result = m_db->search(c->request()->queryParam(QStringLiteral("q")));
     QVariantList apps;
-    Q_FOREACH (const auto &desktop, result) {
+    for (const auto &desktop : result) {
         apps.append(componentToMap(c, desktop));
     }
     c->setStash(QStringLiteral("apps"), apps);
@@ -111,15 +111,15 @@ void Root::search(Context *c)
 
 void Root::app(Context *c, const QString &id)
 {
-    auto desktops = m_db->componentsById(id);
+    const QList<AppStream::Component> desktops = m_db->componentsById(id);
     QVariantList apps;
-    Q_FOREACH (const auto &desktop, desktops) {
+    for (const auto &desktop : desktops) {
         apps.append(componentToMap(c, desktop));
     }
     c->setStash(QStringLiteral("apps"), apps);
 
     /*
-    auto desktop = m_db->componentsById(id);
+    QList<AppStream::Component> desktop = m_db->componentsById(id);
     c->setStash(QStringLiteral("app"), componentToMap(c, desktop[0]));
     */
 }
