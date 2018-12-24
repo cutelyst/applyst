@@ -99,19 +99,19 @@ void Root::search(Context *c)
     1   2  3  4  5  6  7  8  9 10
    11  12 13 14 15 16 17 18 19 20*/
     QList<AppStream::Component> resultForPage;
-    for (int i = 1; i < appsPerPage; i++){
-        resultForPage.append(result[c->req()->queryParam(QStringLiteral("page"), QStringLiteral("1")).toInt() * i]);
+    for (int i = 0; i < appsPerPage; i++){
+        resultForPage.append(result[(c->req()->queryParam(QStringLiteral("page"), QStringLiteral("1")).toInt() - 1) * appsPerPage + i]);
     }
 
     if (result.size() >= 0) {
-    Pagination pagination(result.size(),
-                          appsPerPage,
-                          c->req()->queryParam(QStringLiteral("page"), QStringLiteral("1")).toInt());
+        Pagination pagination(result.size(),
+                              appsPerPage,
+                              c->req()->queryParam(QStringLiteral("page"), QStringLiteral("1")).toInt());
 
-    offset = pagination.offset();
-    c->setStash(QStringLiteral("pagination"), pagination);
-    c->setStash(QStringLiteral("posts_count"), result.size());
-    c->setStash(QStringLiteral("search"), searchText);
+        offset = pagination.offset();
+        c->setStash(QStringLiteral("pagination"), pagination);
+        c->setStash(QStringLiteral("posts_count"), result.size());
+        c->setStash(QStringLiteral("search"), searchText);
     } else {
         c->response()->redirect(c->uriFor(CActionFor(QStringLiteral("notFound"))));
         return;
