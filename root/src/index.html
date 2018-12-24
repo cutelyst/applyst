@@ -6,11 +6,13 @@
             <p>{{ mainApp.summary }}</p>
             <p><a class="btn btn-primary btn-lg" href="/app/{{ mainApp.id }}" role="button">More...</a></p>
             </div>
+            {% if mainApp.screenshot %}
             <div class="item  col-xs-4 col-lg-4">
             <div class="thumbnail">
             <img src="{{ mainApp.screenshot }}" class="img-rounded">
             </div>
             </div>
+            {% endif %}
         </div>
       </div>
     </div>
@@ -20,7 +22,7 @@
 </style>
 
  <div class="row">
- {% for app in apps %}
+    {% for app in apps %}
         <div class="item  col-xs-3 col-lg-3">
             <div class="thumbnail">
                 <img class="group list-group-image" src="{{ app.icon }}" alt="" />

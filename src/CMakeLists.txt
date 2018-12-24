@@ -1,20 +1,23 @@
-file(GLOB_RECURSE cutelyst_SRCS *.cpp *.h)
+file(GLOB_RECURSE applyst_SRCS *.cpp *.h)
 
-set(cutelyst_SRCS
-    ${cutelyst_SRCS}
+set(applyst_SRCS
+    ${applyst_SRCS}
     ${TEMPLATES_SRC}
 )
 
 # Create the application
-add_library(${PROJECT_NAME} SHARED ${cutelyst_SRCS})
+add_library(${PROJECT_NAME} SHARED ${applyst_SRCS})
 
 # Link to Cutelyst
 target_link_libraries(${PROJECT_NAME}
+    AppStreamQt
     Cutelyst::Core
     Cutelyst::StaticSimple
     Cutelyst::View::Grantlee
-    AppstreamQt
+    Cutelyst::Utils::Pagination
+    Cutelyst::Authentication
+    Cutelyst::Session
+    Grantlee5::Templates
     Qt5::Core
     Qt5::Network
 )
-
