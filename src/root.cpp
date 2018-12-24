@@ -90,15 +90,17 @@ void Root::search(Context *c)
 {
     const int appsPerPage = 10;
     int offset;
-    int count = 0;
 
     QString searchText = c->req()->queryParam(QStringLiteral("q"));
 
     const QList<AppStream::Component> result = m_db->search(c->request()->queryParam(QStringLiteral("q")));
 
+    /*
+    1   2  3  4  5  6  7  8  9 10
+   11  12 13 14 15 16 17 18 19 20*/
     QList<AppStream::Component> resultForPage;
-    for (int i = 0; i < appsPerPage; i++){
-        resultForPage.append(result[c->req()->queryParam(QStringLiteral("page")).toInt() * i]);
+    for (int i = 1; i < appsPerPage; i++){
+        resultForPage.append(result[c->req()->queryParam(QStringLiteral("page"), QStringLiteral("1")).toInt() * i]);
     }
 
     if (result.size() >= 0) {
