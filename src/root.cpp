@@ -95,15 +95,15 @@ void Root::search(Context *c)
 
     const QList<AppStream::Component> result = m_db->search(c->request()->queryParam(QStringLiteral("q")));
 
-    /*
-    1   2  3  4  5  6  7  8  9 10
-   11  12 13 14 15 16 17 18 19 20*/
     QList<AppStream::Component> resultForPage;
-    for (int i = 0; i < appsPerPage; i++){
-        resultForPage.append(result[(c->req()->queryParam(QStringLiteral("page"), QStringLiteral("1")).toInt() - 1) * appsPerPage + i]);
+    for (int i = 0; i < appsPerPage - 1; i++){
+        int listIndex = (c->req()->queryParam(QStringLiteral("page"), QStringLiteral("1")).toInt() - 1) * appsPerPage + i;
+        if (result.size() <= listIndex)
+            break;
+        resultForPage.append(result.at(listIndex));
     }
 
-    if (result.size() >= 0) {
+    if (!result.isEmpty()) {
         Pagination pagination(result.size(),
                               appsPerPage,
                               c->req()->queryParam(QStringLiteral("page"), QStringLiteral("1")).toInt());
